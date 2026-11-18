@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Pentadbir — Sistem Praktikum IPGKBA</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            ipgNavy: {
+              950: '#040b17',
+              900: '#07162c',
+              800: '#0c2b5e',
+              700: '#133e82',
+            },
+            ipgGold: {
+              400: '#fdf1a9',
+              500: '#dfb253',
+              600: '#b8860b',
+              700: '#997015',
+            },
+            ipgBlue: {
+              500: '#0080ff',
+              600: '#0066cc',
+            },
+            /* Tona Hijau Muted / Forest Sage (Menggantikan hijau neon) */
+            ipgGreen: {
+              300: '#a3d9b8',
+              400: '#74c69d',
+              500: '#40916c',
+              600: '#2d6a4f',
+              700: '#1b4332',
+              900: '#112a20',
+            },
+            /* Tona Merah Muted / Burgundy Crimson (Menggantikan merah neon) */
+            ipgRed: {
+              300: '#eba3a3',
+              400: '#d97b7b',
+              500: '#b34b4b',
+              600: '#8f3636',
+              700: '#6e2626',
+              900: '#361313',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #07162c; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #dfb253; }
+  </style>
+</head>
+
+<body class="h-full text-slate-100 font-sans antialiased flex flex-col min-h-screen bg-slate-950 bg-[url('/Qr/Bg.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+
+  <!-- ========================================================= -->
+  <!-- HEADER BAR (GAYA SERAGAM DENGAN PRAKTIKUM.HTML)           -->
+  <!-- ========================================================= -->
+  <header class="bg-slate-900/40 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Back Link & Logo IPGKBA -->
+      <div class="flex items-center space-x-3">
+        
+        <div class="h-5 w-px bg-slate-700/80 hidden sm:block"></div>
+        <div class="flex items-center gap-2.5">
+          <!-- Logo PNG dengan Bingkai Emas -->
+          <div class="w-9 h-9 rounded-xl bg-white border border-ipgGold-500/60 flex items-center justify-center overflow-hidden shadow-md">
+            <img src="/QR/logo3.png" alt="Logo IPGKBA" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <h1 class="text-sm sm:text-base font-extrabold text-white tracking-wide uppercase leading-tight">
+              Portal Pentadbir <span class="text-ipgGold-400">IPGKBA</span>
+            </h1>
+            <p class="text-[10px] text-slate-400 hidden sm:block">Jabatan Unit Praktikum IPGKBA</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-2.5">
+        
+        <button id="logoutBtn" onclick="logoutAdmin()" class="hidden px-3 py-1.5 rounded-lg bg-ipgRed-900/80 hover:bg-ipgRed-700 text-ipgRed-300 hover:text-white text-xs font-semibold transition-colors border border-ipgRed-700/70 flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Keluar</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- PIN LOGIN OVERLAY / SECTION                               -->
+  <!-- ========================================================= -->
+  <section id="pinGateSection" class="flex-grow flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6 text-center">
+      
+      <div class="w-16 h-16 rounded-2xl bg-white border-2 border-ipgGold-500/70 mx-auto flex items-center justify-center overflow-hidden shadow-lg">
+        <img src="/QR/logo3.png" alt="Logo IPGKBA" class="w-full h-full object-contain">
+      </div>
+
+      <div class="space-y-1">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-ipgGold-400 bg-ipgGold-500/10 px-3 py-1 rounded-full border border-ipgGold-500/20">
+          Akses Terhad Pentadbir
+        </span>
+        <h2 class="text-xl sm:text-2xl font-black text-white pt-2">Pengesahan Keselamatan</h2>
+        <p class="text-xs text-slate-400"></p>
+      </div>
+
+      <form id="pinForm" class="space-y-4">
+        <div>
+          <input type="password" id="adminPinInput" maxlength="8" required placeholder="Masukkan PIN" class="w-full bg-slate-950/90 border border-slate-700 rounded-2xl px-4 py-3.5 text-center text-lg font-extrabold tracking-[0.35em] text-white focus:outline-none focus:border-ipgGold-500 transition-all">
+        </div>
+        <p id="pinErrorMsg" class="hidden text-xs font-semibold text-ipgRed-400">
+          <i class="fa-solid fa-circle-exclamation mr-1"></i> PIN tidak sah. Sila cuba semula.
+        </p>
+        <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-ipgBlue-600 to-ipgBlue-500 hover:from-ipgBlue-500 hover:to-ipgBlue-600 text-white font-extrabold text-sm shadow-xl transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-unlock-keyhole"></i>
+          <span>Buka Papan Pemuka</span>
+        </button>
+      </form>
+
+    </div>
+  </section>
+
+  <!-- ========================================================= -->
+  <!-- MAIN ADMIN DASHBOARD CONTENT                              -->
+  <!-- ========================================================= -->
+  <main id="adminDashboardSection" class="hidden flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toastNotification" class="hidden p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between shadow-xl backdrop-blur-md">
+      <div class="flex items-center gap-3">
+        <i id="toastIcon" class="fa-solid fa-circle-info text-lg"></i>
+        <span id="toastMessage" class="text-sm font-medium"></span>
+      </div>
+      <button onclick="hideToast()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- TOP STATS OVERVIEW CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Total Placements -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl p-5 shadow-xl flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400">Kumpulan Berdaftar</span>
+          <h3 id="statTotalGroups" class="text-2xl sm:text-3xl font-black text-white mt-1">0</h3>
+          <span class="text-[11px] text-ipgBlue-400 font-medium">Penempatan disahkan</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-ipgBlue-500/15 border border-ipgBlue-500/30 text-ipgBlue-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-people-group"></i>
+        </div>
+      </div>
+
+      <!-- Total Trainees -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl p-5 shadow-xl flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400">Jumlah Guru Pelatih</span>
+          <h3 id="statTotalTrainees" class="text-2xl sm:text-3xl font-black text-white mt-1">0</h3>
+          <span class="text-[11px] text-ipgGold-400 font-medium">Ketua & ahli kumpulan</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-ipgGold-500/15 border border-ipgGold-500/30 text-ipgGold-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-user-graduate"></i>
+        </div>
+      </div>
+
+      <!-- Available Schools (Muted Forest Green) -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl p-5 shadow-xl flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400">Sekolah Kosong</span>
+          <h3 id="statAvailableSchools" class="text-2xl sm:text-3xl font-black text-ipgGreen-300 mt-1">0</h3>
+          <span class="text-[11px] text-ipgGreen-400 font-medium">Masih dibuka untuk pilihan</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-ipgGreen-900/80 border border-ipgGreen-600/40 text-ipgGreen-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-door-open"></i>
+        </div>
+      </div>
+
+      <!-- Full Schools (Muted Burgundy Crimson) -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl p-5 shadow-xl flex items-center justify-between">
+        <div>
+          <span class="text-xs font-semibold text-slate-400">Sekolah Penuh</span>
+          <h3 id="statFullSchools" class="text-2xl sm:text-3xl font-black text-ipgRed-300 mt-1">0</h3>
+          <span class="text-[11px] text-ipgRed-400 font-medium">Kuota telah diisi</span>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-ipgRed-900/80 border border-ipgRed-600/40 text-ipgRed-400 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- NAVIGATION TABS & GLOBAL ACTIONS -->
+    <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-2xl p-3 shadow-xl flex flex-col md:flex-row items-center justify-between gap-3">
+      
+      <!-- Tab Buttons -->
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <button id="tabBtn-placements" onclick="switchAdminTab('placements')" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-ipgBlue-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <span>Rekod Penempatan Pelajar</span>
+        </button>
+        <button id="tabBtn-schools" onclick="switchAdminTab('schools')" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs border border-slate-700/80 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-school"></i>
+          <span>Pengurusan Sekolah (<span id="schoolCountBadge">0</span>)</span>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+        <button onclick="exportCSV()" class="px-4 py-2.5 rounded-xl bg-ipgGreen-600 hover:bg-ipgGreen-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 border border-ipgGreen-500/40">
+          <i class="fa-solid fa-file-csv"></i>
+          <span>Muat Turun Data</span>
+        </button>
+        <button onclick="openAddSchoolModal()" class="px-4 py-2.5 rounded-xl bg-ipgGold-500 hover:bg-ipgGold-600 text-slate-950 font-extrabold text-xs shadow-md transition-all flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i>
+          <span>Tambah Sekolah</span>
+        </button>
+        <button onclick="resetDatabase()" class="px-3.5 py-2.5 rounded-xl bg-ipgRed-900/80 hover:bg-ipgRed-700 text-ipgRed-300 hover:text-white font-bold text-xs border border-ipgRed-700/60 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate"></i>
+          <span>Reset Data</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- TAB 1: REKOD PENEMPATAN PELAJAR                           -->
+    <!-- ========================================================= -->
+    <section id="adminTab-placements" class="space-y-4">
+      
+      <!-- Filter Toolbar -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 p-4 rounded-2xl shadow-xl flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div class="relative w-full md:w-80">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+          <input type="text" id="placementSearchInput" oninput="renderPlacementsTable()" placeholder="Cari nama, IC, kelas atau sekolah..." class="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <select id="placementNegeriFilter" onchange="renderPlacementsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="ALL">Semua Negeri</option>
+            <option value="KL">Kuala Lumpur (KL)</option>
+            <option value="Selangor">Selangor</option>
+          </select>
+
+          <select id="placementSubjectFilter" onchange="renderPlacementsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="ALL">Semua Opsyen</option>
+            <option value="Bahasa Melayu">Bahasa Melayu</option>
+            <option value="Bahasa Inggeris (TESL)">Bahasa Inggeris (TESL)</option>
+            <option value="Pendidikan Islam">Pendidikan Islam</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Placements Table Container -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="p-4">Bil.</th>
+                <th class="p-4">Rujukan & Tarikh</th>
+                <th class="p-4">Ketua & Ahli Kumpulan</th>
+                <th class="p-4">Opsyen & Kelas</th>
+                <th class="p-4">Sekolah Penempatan</th>
+                <th class="p-4 text-center">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="placementsTableBody" class="divide-y divide-slate-800/80">
+              <!-- Rows Injected Via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- TAB 2: PENGURUSAN & EDIT SENARAI SEKOLAH                  -->
+    <!-- ========================================================= -->
+    <section id="adminTab-schools" class="hidden space-y-4">
+      
+      <!-- Search & Filter Toolbar dengan Butang Cari -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 p-4 rounded-2xl shadow-xl flex flex-col lg:flex-row gap-3 items-center justify-between">
+        
+        <div class="flex items-center gap-2 w-full lg:w-auto flex-grow max-w-xl">
+          <div class="relative flex-grow">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="adminSchoolSearchInput" onkeydown="if(event.key==='Enter') renderAdminSchoolsTable()" placeholder="Cari nama sekolah, kod, daerah atau alamat..." class="w-full bg-slate-950/90 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+          </div>
+          <button onclick="renderAdminSchoolsTable()" class="px-4 py-2 rounded-xl bg-ipgBlue-600 hover:bg-ipgBlue-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 shrink-0">
+            <i class="fa-solid fa-search"></i>
+            <span>Cari</span>
+          </button>
+          <button onclick="clearSchoolSearch()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 shrink-0" title="Set Semula Carian">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+          <select id="adminSchoolNegeriFilter" onchange="renderAdminSchoolsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="ALL">Semua Negeri</option>
+            <option value="KL">Kuala Lumpur (KL)</option>
+            <option value="Selangor">Selangor</option>
+          </select>
+
+          <select id="adminSchoolSubjectFilter" onchange="renderAdminSchoolsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="ALL">Semua Opsyen</option>
+            <option value="Bahasa Melayu">Bahasa Melayu</option>
+            <option value="Bahasa Inggeris (TESL)">Bahasa Inggeris (TESL)</option>
+            <option value="Pendidikan Islam">Pendidikan Islam</option>
+          </select>
+
+          <select id="adminSchoolStatusFilter" onchange="renderAdminSchoolsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="ALL">Semua Status</option>
+            <option value="AVAILABLE">Ada Kekosongan</option>
+            <option value="FULL">Penuh (Lock)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Schools Table Container -->
+      <div class="bg-slate-900/85 backdrop-blur-md border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="p-4">Kod & Nama Sekolah</th>
+                <th class="p-4">Negeri & PPD</th>
+                <th class="p-4">Opsyen Ditetapkan</th>
+                <th class="p-4 text-center">Status Kuota</th>
+                <th class="p-4 text-center">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="adminSchoolsTableBody" class="divide-y divide-slate-800/80">
+              <!-- Rows Injected Via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: TAMBAH SEKOLAH BAHARU                              -->
+  <!-- ========================================================= -->
+  <div id="addSchoolModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-school-flag text-ipgGold-400"></i>
+          <span>Tambah Sekolah Baharu</span>
+        </h3>
+        <button onclick="closeAddSchoolModal()" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="addSchoolForm" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Kod Sekolah (Unik) <span class="text-ipgRed-400">*</span></label>
+            <input type="text" id="newSchoolId" required placeholder="Cth: SK-KL-07" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500 uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Negeri <span class="text-ipgRed-400">*</span></label>
+            <select id="newSchoolState" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+              <option value="KL">Kuala Lumpur (KL)</option>
+              <option value="Selangor">Selangor</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Penuh Sekolah <span class="text-ipgRed-400">*</span></label>
+          <input type="text" id="newSchoolName" required placeholder="Cth: SK Taman Tun Dr Ismail 1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Daerah / PPD <span class="text-ipgRed-400">*</span></label>
+            <input type="text" id="newSchoolDistrict" required placeholder="Cth: PPD Bangsar / Pudu" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Opsyen Tunggal Sekolah <span class="text-ipgRed-400">*</span></label>
+            <select id="newSchoolSubject" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+              <option value="Bahasa Melayu">Bahasa Melayu</option>
+              <option value="Bahasa Inggeris (TESL)">Bahasa Inggeris (TESL)</option>
+              <option value="Pendidikan Islam">Pendidikan Islam</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Alamat Lengkap Sekolah <span class="text-ipgRed-400">*</span></label>
+          <input type="text" id="newSchoolAddress" required placeholder="Cth: Jalan Aminuddin Baki, 60000 Kuala Lumpur" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Kuota Kumpulan</label>
+            <input type="number" id="newSchoolMaxGroups" value="1" min="1" max="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Latitud (GPS)</label>
+            <input type="number" step="any" id="newSchoolLat" value="3.1390" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Longitud (GPS)</label>
+            <input type="number" step="any" id="newSchoolLng" value="101.6869" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeAddSchoolModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ipgGold-500 hover:bg-ipgGold-600 text-slate-950 font-extrabold text-xs shadow-lg">
+            Simpan Sekolah
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: EDIT BUTIRAN SEKOLAH                               -->
+  <!-- ========================================================= -->
+  <div id="editSchoolModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-ipgBlue-400"></i>
+          <span>Kemaskini Maklumat Sekolah</span>
+        </h3>
+        <button onclick="closeEditSchoolModal()" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="editSchoolForm" class="space-y-4">
+        <input type="hidden" id="editSchoolId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Kod Sekolah</label>
+            <input type="text" id="editSchoolIdDisplay" disabled class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-400 font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Negeri <span class="text-ipgRed-400">*</span></label>
+            <select id="editSchoolState" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+              <option value="KL">Kuala Lumpur (KL)</option>
+              <option value="Selangor">Selangor</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Penuh Sekolah <span class="text-ipgRed-400">*</span></label>
+          <input type="text" id="editSchoolName" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Daerah / PPD <span class="text-ipgRed-400">*</span></label>
+            <input type="text" id="editSchoolDistrict" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Opsyen Tunggal Sekolah <span class="text-ipgRed-400">*</span></label>
+            <select id="editSchoolSubject" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+              <option value="Bahasa Melayu">Bahasa Melayu</option>
+              <option value="Bahasa Inggeris (TESL)">Bahasa Inggeris (TESL)</option>
+              <option value="Pendidikan Islam">Pendidikan Islam</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Alamat Lengkap Sekolah <span class="text-ipgRed-400">*</span></label>
+          <input type="text" id="editSchoolAddress" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Kuota Maks</label>
+            <input type="number" id="editSchoolMaxGroups" min="1" max="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Slot Diisi</label>
+            <input type="number" id="editSchoolBookedGroups" min="0" max="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Latitud</label>
+            <input type="number" step="any" id="editSchoolLat" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Longitud</label>
+            <input type="number" step="any" id="editSchoolLng" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeEditSchoolModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ipgBlue-600 hover:bg-ipgBlue-500 text-white font-extrabold text-xs shadow-lg">
+            Simpan Perubahan
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT & FIREBASE REAL-TIME ENGINE                    -->
+  <!-- ========================================================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, collection, onSnapshot, setDoc, updateDoc, deleteDoc, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const ADMIN_PIN = "1234";
+
+    // FIREBASE CONFIG (SAMA SEPERTI PRAKTIKUM.HTML)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'ipg-praktikum-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+      ? JSON.parse(__firebase_config) 
+      : {
+          apiKey: "AIzaSyDou0u7QzYs1FMJHp1p8hJQQjtEZf8HCDo",
+          authDomain: "ipgkba-praktikum.firebaseapp.com",
+          projectId: "ipgkba-praktikum",
+          storageBucket: "ipgkba-praktikum.firebasestorage.app",
+          messagingSenderId: "430485170676",
+          appId: "1:430485170676:web:c75ba94554c7c1e0aab1a1"
+        };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const SCHOOL_DEFAULTS = [
+      { id: 'SK-KL-01', name: 'SK Bangsar', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Pantai Baharu, 59200 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.1189, lng: 101.6732, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-KL-02', name: 'SK Taman Melawati', state: 'KL', district: 'PPD Keramat', address: 'Jalan Melawati 5, 53100 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.2104, lng: 101.7495, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-KL-03', name: 'SK Seri Setia', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kuchai Lama, 58200 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.0891, lng: 101.6894, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-KL-04', name: 'SK Sentul Utama', state: 'KL', district: 'PPD Sentul', address: 'Jalan Sentul, 51100 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.1874, lng: 101.6921, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-KL-05', name: 'SK Bandar Tun Razak 1', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sembilang, 56000 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.0934, lng: 101.7210, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-KL-06', name: 'SK Kepong Baru', state: 'KL', district: 'PPD Sentul', address: 'Jalan Api Api, 52100 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.2120, lng: 101.6412, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-SEL-01', name: 'SK Seksyen 7 Shah Alam', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan Tungsten 7/23, 40000 Shah Alam', maxGroups: 1, bookedGroups: 0, lat: 3.0782, lng: 101.4912, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-SEL-02', name: 'SK Subang Jaya', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 14/1, 47500 Subang Jaya', maxGroups: 1, bookedGroups: 0, lat: 3.0645, lng: 101.5891, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-SEL-03', name: 'SK Saujana Impian Kajang', state: 'Selangor', district: 'PPD Hulu Langat', address: 'KM 22 Jalan Cheras, 43000 Kajang', maxGroups: 1, bookedGroups: 0, lat: 3.0084, lng: 101.7892, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-SEL-04', name: 'SK Gombak Setia', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan 9, Gombak Setia, 53100 Kuala Lumpur', maxGroups: 1, bookedGroups: 0, lat: 3.2201, lng: 101.7192, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-SEL-05', name: 'SK Petaling Jaya', state: 'Selangor', district: 'PPD Petaling Utama', address: 'Jalan 1/9, 46000 Petaling Jaya', maxGroups: 1, bookedGroups: 0, lat: 3.0921, lng: 101.6421, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-SEL-06', name: 'SK Bandar Baru Bangi', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan 2/1, 43650 Bandar Baru Bangi', maxGroups: 1, bookedGroups: 0, lat: 2.9641, lng: 101.7753, subjectsNeeded: ['Pendidikan Islam'] }
+    ];
+
+    let adminState = {
+      schools: [],
+      placements: [],
+      activeTab: 'placements'
+    };
+
+    // ---------------------------------------------------------
+    // AUTH & INITIALIZATION
+    // ---------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (sessionStorage.getItem('ipg_admin_auth') === 'true') {
+        unlockDashboard();
+      }
+
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+        initRealtimeListeners();
+      } catch (err) {
+        console.error("Firebase Init Error:", err);
+      }
+    });
+
+    document.getElementById('pinForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const inputVal = document.getElementById('adminPinInput').value.trim();
+      if (inputVal === ADMIN_PIN) {
+        sessionStorage.setItem('ipg_admin_auth', 'true');
+        document.getElementById('pinErrorMsg').classList.add('hidden');
+        unlockDashboard();
+      } else {
+        document.getElementById('pinErrorMsg').classList.remove('hidden');
+      }
+    });
+
+    function unlockDashboard() {
+      document.getElementById('pinGateSection').classList.add('hidden');
+      document.getElementById('adminDashboardSection').classList.remove('hidden');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+    }
+
+    window.logoutAdmin = function() {
+      sessionStorage.removeItem('ipg_admin_auth');
+      document.getElementById('adminPinInput').value = '';
+      document.getElementById('adminDashboardSection').classList.add('hidden');
+      document.getElementById('logoutBtn').classList.add('hidden');
+      document.getElementById('pinGateSection').classList.remove('hidden');
+    };
+
+    // ---------------------------------------------------------
+    // REAL-TIME FIRESTORE LISTENERS
+    // ---------------------------------------------------------
+    function initRealtimeListeners() {
+      const schoolsRef = collection(db, 'artifacts', appId, 'public', 'data', 'schools');
+      const placementsRef = collection(db, 'artifacts', appId, 'public', 'data', 'placements');
+
+      onSnapshot(schoolsRef, (snapshot) => {
+        adminState.schools = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        updateStats();
+        renderAdminSchoolsTable();
+      });
+
+      onSnapshot(placementsRef, (snapshot) => {
+        adminState.placements = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        updateStats();
+        renderPlacementsTable();
+      });
+    }
+
+    function updateStats() {
+      const totalGroups = adminState.placements.length;
+      const totalTrainees = adminState.placements.reduce((sum, p) => sum + 1 + (p.members ? p.members.length : 0), 0);
+      const availSchools = adminState.schools.filter(s => (s.maxGroups - s.bookedGroups) > 0).length;
+      const fullSchools = adminState.schools.filter(s => (s.maxGroups - s.bookedGroups) <= 0).length;
+
+      document.getElementById('statTotalGroups').innerText = totalGroups;
+      document.getElementById('statTotalTrainees').innerText = totalTrainees;
+      document.getElementById('statAvailableSchools').innerText = availSchools;
+      document.getElementById('statFullSchools').innerText = fullSchools;
+      document.getElementById('schoolCountBadge').innerText = adminState.schools.length;
+    }
+
+    // ---------------------------------------------------------
+    // TAB SWITCHING
+    // ---------------------------------------------------------
+    window.switchAdminTab = function(tabName) {
+      adminState.activeTab = tabName;
+
+      const pSec = document.getElementById('adminTab-placements');
+      const sSec = document.getElementById('adminTab-schools');
+      const pBtn = document.getElementById('tabBtn-placements');
+      const sBtn = document.getElementById('tabBtn-schools');
+
+      if (tabName === 'placements') {
+        pSec.classList.remove('hidden');
+        sSec.classList.add('hidden');
+        pBtn.className = 'flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-ipgBlue-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2';
+        sBtn.className = 'flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs border border-slate-700/80 transition-all flex items-center justify-center gap-2';
+      } else {
+        sSec.classList.remove('hidden');
+        pSec.classList.add('hidden');
+        sBtn.className = 'flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-ipgBlue-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2';
+        pBtn.className = 'flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs border border-slate-700/80 transition-all flex items-center justify-center gap-2';
+      }
+    };
+
+    // ---------------------------------------------------------
+    // RENDER PLACEMENTS TABLE
+    // ---------------------------------------------------------
+    window.renderPlacementsTable = function() {
+      const tbody = document.getElementById('placementsTableBody');
+      const search = document.getElementById('placementSearchInput').value.toLowerCase();
+      const negeriFilter = document.getElementById('placementNegeriFilter').value;
+      const subjectFilter = document.getElementById('placementSubjectFilter').value;
+
+      let filtered = adminState.placements.filter(p => {
+        if (negeriFilter !== 'ALL' && p.negeri !== negeriFilter) return false;
+        if (subjectFilter !== 'ALL' && p.leader?.subject !== subjectFilter) return false;
+
+        if (search) {
+          const allText = [
+            p.refCode,
+            p.leader?.name,
+            p.leader?.ic,
+            p.leader?.class,
+            p.school?.name,
+            ...(p.members || []).map(m => `${m.name} ${m.ic} ${m.class || ''}`)
+          ].join(' ').toLowerCase();
+          if (!allText.includes(search)) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="p-10 text-center text-slate-400">
+              <i class="fa-solid fa-folder-open text-2xl text-slate-500 mb-2 block"></i>
+              Tiada rekod penempatan pelajar ditemui.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((p, index) => {
+        const membersHtml = (p.members || []).map((m, idx) => `
+          <div class="text-slate-300 mt-1 pl-2 border-l-2 border-slate-700">
+            <span class="text-slate-400 font-semibold">Ahli ${idx + 1}:</span> ${m.name} 
+            <span class="text-slate-500">(${m.ic})</span>
+          </div>
+        `).join('');
+
+        const memberClassesHtml = (p.members || []).map((m, idx) => `
+          <div class="text-slate-400 mt-1 text-[11px]">
+            Ahli ${idx + 1}: ${m.subject} • <span class="text-slate-300 font-semibold">${m.class || '-'}</span>
+          </div>
+        `).join('');
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition-colors align-top">
+            <td class="p-4 font-bold text-slate-400">${index + 1}</td>
+            <td class="p-4">
+              <span class="font-mono font-bold text-ipgGold-400 bg-ipgGold-500/10 px-2 py-0.5 rounded border border-ipgGold-500/20">${p.refCode}</span>
+              <div class="text-[11px] text-slate-400 mt-1.5">${p.date || '-'}</div>
+              <div class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-phone mr-1"></i>${p.leader?.phone || '-'}</div>
+            </td>
+            <td class="p-4">
+              <div class="font-bold text-white">
+                <span class="text-[10px] bg-ipgBlue-500/20 text-ipgBlue-400 px-1.5 py-0.5 rounded border border-ipgBlue-500/30 mr-1">KETUA</span>
+                ${p.leader?.name || '-'}
+              </div>
+              <div class="text-[11px] text-slate-400 mt-0.5">IC: ${p.leader?.ic || '-'}</div>
+              ${membersHtml}
+            </td>
+            <td class="p-4">
+              <span class="inline-block text-[11px] font-bold text-ipgBlue-400 bg-ipgBlue-500/10 px-2 py-0.5 rounded-md border border-ipgBlue-500/20">
+                ${p.leader?.subject || '-'}
+              </span>
+              <div class="text-[11px] text-slate-200 font-semibold mt-1">Kelas Ketua: ${p.leader?.class || '-'}</div>
+              ${memberClassesHtml}
+            </td>
+            <td class="p-4">
+              <div class="font-bold text-white">${p.school?.name || '-'}</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">${p.negeri} • ${p.school?.district || ''}</div>
+              <div class="text-[11px] text-ipgGold-400 mt-0.5"><i class="fa-solid fa-car-side mr-1"></i>${p.school?.calculatedDistance || '0'} KM</div>
+            </td>
+            <td class="p-4 text-center">
+              <button onclick="deletePlacement('${p.id}', '${p.school?.id || ''}')" class="px-3 py-1.5 rounded-xl bg-ipgRed-900/80 hover:bg-ipgRed-600 text-ipgRed-300 hover:text-white text-[11px] font-bold border border-ipgRed-700/60 transition-all inline-flex items-center gap-1" title="Batalkan Penempatan & Buka Semula Slot">
+                <i class="fa-solid fa-trash-can"></i> Batal
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // Cancel Placement & Reopen School Slot Atomically
+    window.deletePlacement = async function(placementId, schoolId) {
+      if (!confirm(`Adakah anda pasti mahu membatalkan penempatan ${placementId}? Slot sekolah akan dibuka semula secara automatik.`)) return;
+
+      try {
+        if (schoolId) {
+          const schoolRef = doc(db, 'artifacts', appId, 'public', 'data', 'schools', schoolId);
+          await runTransaction(db, async (transaction) => {
+            const schoolDoc = await transaction.get(schoolRef);
+            if (schoolDoc.exists()) {
+              const currentBooked = schoolDoc.data().bookedGroups || 0;
+              transaction.update(schoolRef, { bookedGroups: Math.max(0, currentBooked - 1) });
+            }
+          });
+        }
+
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'placements', placementId));
+        showToast('Penempatan dibatalkan dan kuota sekolah telah dibuka semula.', 'success');
+      } catch (err) {
+        console.error("Delete Placement Error:", err);
+        showToast('Gagal membatalkan penempatan.', 'error');
+      }
+    };
+
+    // ---------------------------------------------------------
+    // CSV EXPORT (KETUA + AHLI DALAM 1 PETAK SELARI KE BAWAH)
+    // ---------------------------------------------------------
+    window.exportCSV = function() {
+      if (adminState.placements.length === 0) {
+        showToast('Tiada rekod penempatan untuk dimuat turun.', 'error');
+        return;
+      }
+
+      const headers = [
+        'Bil.',
+        'Nama Pelatih',
+        'Opsyen',
+        'No. IC',
+        'Kelas',
+        'Negeri',
+        'Sekolah',
+        'Bilangan Pelatih',
+        'Tarikh & Masa'
+      ];
+
+      const escapeCell = (val) => {
+        const str = String(val ?? '').replace(/"/g, '""');
+        return `"${str}"`;
+      };
+
+      const rows = adminState.placements.map((p, index) => {
+        const allMembers = [
+          {
+            name: `${p.leader?.name || '-'} (Ketua)`,
+            subject: p.leader?.subject || '-',
+            ic: p.leader?.ic || '-',
+            class: p.leader?.class || '-'
+          },
+          ...(p.members || []).map(m => ({
+            name: m.name || '-',
+            subject: m.subject || '-',
+            ic: m.ic || '-',
+            class: m.class || '-'
+          }))
+        ];
+
+        const combinedNames = allMembers.map(m => m.name).join(';\n');
+        const combinedSubjects = allMembers.map(m => m.subject).join(';\n');
+        const combinedIcs = allMembers.map(m => m.ic).join(';\n');
+        const combinedClasses = allMembers.map(m => m.class).join(';\n');
+        const totalCount = allMembers.length;
+
+        const formattedTimestamp = p.timestamp
+          ? new Date(p.timestamp).toLocaleString('ms-MY', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : (p.date || '-');
+
+        return [
+          escapeCell(index + 1),
+          escapeCell(combinedNames),
+          escapeCell(combinedSubjects),
+          escapeCell(combinedIcs),
+          escapeCell(combinedClasses),
+          escapeCell(p.negeri || '-'),
+          escapeCell(p.school?.name || '-'),
+          escapeCell(totalCount),
+          escapeCell(formattedTimestamp)
+        ].join(',');
+      });
+
+      const csvContent = '\ufeff' + [headers.map(escapeCell).join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Laporan_Penempatan_Praktikum_IPGKBA_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast('Fail CSV berjaya dijana dan dimuat turun!', 'success');
+    };
+
+    // ---------------------------------------------------------
+    // RENDER & MANAGE SCHOOLS TABLE (SEARCH + EDIT + DELETE)
+    // ---------------------------------------------------------
+    window.clearSchoolSearch = function() {
+      document.getElementById('adminSchoolSearchInput').value = '';
+      document.getElementById('adminSchoolNegeriFilter').value = 'ALL';
+      document.getElementById('adminSchoolSubjectFilter').value = 'ALL';
+      document.getElementById('adminSchoolStatusFilter').value = 'ALL';
+      renderAdminSchoolsTable();
+    };
+
+    window.renderAdminSchoolsTable = function() {
+      const tbody = document.getElementById('adminSchoolsTableBody');
+      const search = document.getElementById('adminSchoolSearchInput').value.toLowerCase().trim();
+      const negeriFilter = document.getElementById('adminSchoolNegeriFilter').value;
+      const subjectFilter = document.getElementById('adminSchoolSubjectFilter').value;
+      const statusFilter = document.getElementById('adminSchoolStatusFilter').value;
+
+      let filtered = [...adminState.schools].sort((a, b) => a.id.localeCompare(b.id));
+
+      if (search) {
+        filtered = filtered.filter(s =>
+          (s.name || '').toLowerCase().includes(search) ||
+          (s.id || '').toLowerCase().includes(search) ||
+          (s.district || '').toLowerCase().includes(search) ||
+          (s.address || '').toLowerCase().includes(search)
+        );
+      }
+
+      if (negeriFilter !== 'ALL') {
+        filtered = filtered.filter(s => s.state === negeriFilter);
+      }
+
+      if (subjectFilter !== 'ALL') {
+        filtered = filtered.filter(s => s.subjectsNeeded && s.subjectsNeeded.includes(subjectFilter));
+      }
+
+      if (statusFilter === 'AVAILABLE') {
+        filtered = filtered.filter(s => (s.maxGroups - s.bookedGroups) > 0);
+      } else if (statusFilter === 'FULL') {
+        filtered = filtered.filter(s => (s.maxGroups - s.bookedGroups) <= 0);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-10 text-center text-slate-400">
+              <i class="fa-solid fa-school-circle-xmark text-2xl text-slate-500 mb-2 block"></i>
+              Tiada sekolah ditemui mengikut kata kunci carian anda.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => {
+        const slotsLeft = Math.max(0, (s.maxGroups || 1) - (s.bookedGroups || 0));
+        const isFull = slotsLeft <= 0;
+        const subjectText = (s.subjectsNeeded && s.subjectsNeeded.length > 0) ? s.subjectsNeeded.join(', ') : '-';
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="p-4">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${s.id}</span>
+                <span class="font-bold text-white text-sm">${s.name}</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i>${s.address}</div>
+            </td>
+            <td class="p-4">
+              <span class="font-bold text-slate-200">${s.state}</span>
+              <div class="text-[11px] text-slate-400 mt-0.5">${s.district}</div>
+            </td>
+            <td class="p-4">
+              <span class="text-[11px] font-bold text-ipgGold-400 bg-ipgGold-500/10 px-2.5 py-1 rounded-lg border border-ipgGold-500/20">
+                ${subjectText}
+              </span>
+            </td>
+            <td class="p-4 text-center">
+              ${isFull ?
+                `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-ipgRed-300 bg-ipgRed-900/80 px-2.5 py-1 rounded-full border border-ipgRed-600/50">
+                  <i class="fa-solid fa-lock"></i> PENUH (${s.bookedGroups}/${s.maxGroups})
+                 </span>` :
+                `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-ipgGreen-300 bg-ipgGreen-900/80 px-2.5 py-1 rounded-full border border-ipgGreen-600/50">
+                  <i class="fa-solid fa-check"></i> BAKI ${slotsLeft} KUOTA
+                 </span>`
+              }
+            </td>
+            <td class="p-4 text-center">
+              <div class="inline-flex items-center gap-1.5">
+                <button onclick="openEditSchoolModal('${s.id}')" class="px-3 py-1.5 rounded-xl bg-ipgBlue-600/90 hover:bg-ipgBlue-500 text-white text-[11px] font-bold transition-all inline-flex items-center gap-1 shadow-sm">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
+                <button onclick="deleteSchool('${s.id}', '${s.name.replace(/'/g, "\\'")}')" class="px-2.5 py-1.5 rounded-xl bg-ipgRed-900/80 hover:bg-ipgRed-600 text-ipgRed-300 hover:text-white text-[11px] font-bold border border-ipgRed-700/60 transition-all" title="Padam Sekolah">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    // ---------------------------------------------------------
+    // MODAL CONTROLS: TAMBAH SEKOLAH
+    // ---------------------------------------------------------
+    window.openAddSchoolModal = function() {
+      document.getElementById('addSchoolForm').reset();
+      document.getElementById('addSchoolModal').classList.remove('hidden');
+    };
+
+    window.closeAddSchoolModal = function() {
+      document.getElementById('addSchoolModal').classList.add('hidden');
+    };
+
+    document.getElementById('addSchoolForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('newSchoolId').value.trim().toUpperCase();
+      const name = document.getElementById('newSchoolName').value.trim();
+      const state = document.getElementById('newSchoolState').value;
+      const district = document.getElementById('newSchoolDistrict').value.trim();
+      const subject = document.getElementById('newSchoolSubject').value;
+      const address = document.getElementById('newSchoolAddress').value.trim();
+      const maxGroups = parseInt(document.getElementById('newSchoolMaxGroups').value, 10) || 1;
+      const lat = parseFloat(document.getElementById('newSchoolLat').value) || 3.1390;
+      const lng = parseFloat(document.getElementById('newSchoolLng').value) || 101.6869;
+
+      try {
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'schools', id), {
+          id,
+          name,
+          state,
+          district,
+          address,
+          maxGroups,
+          bookedGroups: 0,
+          lat,
+          lng,
+          subjectsNeeded: [subject]
+        });
+        closeAddSchoolModal();
+        showToast(`Sekolah ${name} (${id}) berjaya ditambah!`, 'success');
+      } catch (err) {
+        console.error("Add School Error:", err);
+        showToast('Gagal menambah sekolah baharu.', 'error');
+      }
+    });
+
+    // ---------------------------------------------------------
+    // MODAL CONTROLS: EDIT BUTIRAN SEKOLAH
+    // ---------------------------------------------------------
+    window.openEditSchoolModal = function(schoolId) {
+      const school = adminState.schools.find(s => s.id === schoolId);
+      if (!school) return;
+
+      document.getElementById('editSchoolId').value = school.id;
+      document.getElementById('editSchoolIdDisplay').value = school.id;
+      document.getElementById('editSchoolState').value = school.state || 'KL';
+      document.getElementById('editSchoolName').value = school.name || '';
+      document.getElementById('editSchoolDistrict').value = school.district || '';
+      document.getElementById('editSchoolSubject').value = (school.subjectsNeeded && school.subjectsNeeded[0]) ? school.subjectsNeeded[0] : 'Bahasa Melayu';
+      document.getElementById('editSchoolAddress').value = school.address || '';
+      document.getElementById('editSchoolMaxGroups').value = school.maxGroups ?? 1;
+      document.getElementById('editSchoolBookedGroups').value = school.bookedGroups ?? 0;
+      document.getElementById('editSchoolLat').value = school.lat ?? 3.1390;
+      document.getElementById('editSchoolLng').value = school.lng ?? 101.6869;
+
+      document.getElementById('editSchoolModal').classList.remove('hidden');
+    };
+
+    window.closeEditSchoolModal = function() {
+      document.getElementById('editSchoolModal').classList.add('hidden');
+    };
+
+    document.getElementById('editSchoolForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editSchoolId').value;
+      const state = document.getElementById('editSchoolState').value;
+      const name = document.getElementById('editSchoolName').value.trim();
+      const district = document.getElementById('editSchoolDistrict').value.trim();
+      const subject = document.getElementById('editSchoolSubject').value;
+      const address = document.getElementById('editSchoolAddress').value.trim();
+      const maxGroups = parseInt(document.getElementById('editSchoolMaxGroups').value, 10) || 1;
+      const bookedGroups = parseInt(document.getElementById('editSchoolBookedGroups').value, 10) || 0;
+      const lat = parseFloat(document.getElementById('editSchoolLat').value) || 3.1390;
+      const lng = parseFloat(document.getElementById('editSchoolLng').value) || 101.6869;
+
+      try {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'schools', id), {
+          state,
+          name,
+          district,
+          address,
+          maxGroups,
+          bookedGroups,
+          lat,
+          lng,
+          subjectsNeeded: [subject]
+        });
+        closeEditSchoolModal();
+        showToast(`Perubahan bagi ${name} telah disimpan!`, 'success');
+      } catch (err) {
+        console.error("Edit School Error:", err);
+        showToast('Gagal mengemaskini maklumat sekolah.', 'error');
+      }
+    });
+
+    window.deleteSchool = async function(schoolId, schoolName) {
+      if (!confirm(`Adakah anda pasti mahu memadam ${schoolName} (${schoolId}) daripada senarai sekolah?`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'schools', schoolId));
+        showToast(`Sekolah ${schoolName} berjaya dipadam.`, 'success');
+      } catch (err) {
+        console.error("Delete School Error:", err);
+        showToast('Gagal memadam sekolah.', 'error');
+      }
+    };
+
+    // ---------------------------------------------------------
+    // RESET DATABASE TO DEFAULTS
+    // ---------------------------------------------------------
+    window.resetDatabase = async function() {
+      if (!confirm('AMARAN: Tindakan ini akan memadam SEMUA rekod pendaftaran pelajar dan menetapkan semula senarai sekolah asal. Teruskan?')) return;
+
+      showToast('Sedang menetapkan semula pangkalan data...', 'info');
+      try {
+        const placementsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'placements'));
+        for (const d of placementsSnap.docs) {
+          await deleteDoc(d.ref);
+        }
+
+        const schoolsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'schools'));
+        for (const d of schoolsSnap.docs) {
+          await deleteDoc(d.ref);
+        }
+
+        for (const school of SCHOOL_DEFAULTS) {
+          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'schools', school.id), school);
+        }
+
+        showToast('Pangkalan data berjaya ditetapkan semula!', 'success');
+      } catch (err) {
+        console.error("Reset Error:", err);
+        showToast('Gagal menetapkan semula pangkalan data.', 'error');
+      }
+    };
+
+    // ---------------------------------------------------------
+    // TOAST NOTIFICATION HELPER
+    // ---------------------------------------------------------
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toastNotification');
+      const msg = document.getElementById('toastMessage');
+      const icon = document.getElementById('toastIcon');
+
+      msg.innerText = message;
+      toast.classList.remove('hidden');
+
+      if (type === 'error') {
+        toast.className = 'p-4 rounded-2xl border bg-ipgRed-900/90 border-ipgRed-600/60 text-ipgRed-300 transition-all shadow-xl backdrop-blur-md flex items-center justify-between';
+        icon.className = 'fa-solid fa-triangle-exclamation text-ipgRed-400 text-lg';
+      } else if (type === 'success') {
+        toast.className = 'p-4 rounded-2xl border bg-ipgGreen-900/90 border-ipgGreen-600/60 text-ipgGreen-300 transition-all shadow-xl backdrop-blur-md flex items-center justify-between';
+        icon.className = 'fa-solid fa-circle-check text-ipgGreen-400 text-lg';
+      } else {
+        toast.className = 'p-4 rounded-2xl border bg-slate-900/90 border-slate-700 text-slate-200 transition-all shadow-xl backdrop-blur-md flex items-center justify-between';
+        icon.className = 'fa-solid fa-circle-info text-ipgBlue-400 text-lg';
+      }
+
+      setTimeout(() => { hideToast(); }, 5000);
+    }
+
+    window.hideToast = function() {
+      document.getElementById('toastNotification').classList.add('hidden');
+    };
+  </script>
+
+</body>
+</html>
