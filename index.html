@@ -336,6 +336,13 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+          <select id="adminSchoolTypeFilter" onchange="renderAdminSchoolsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="ALL">Semua Jenis Sekolah</option>
+            <option value="SK">SK</option>
+            <option value="SJKC">SJKC</option>
+            <option value="SJKT">SJKT</option>
+          </select>
+
           <select id="adminSchoolNegeriFilter" onchange="renderAdminSchoolsTable()" class="bg-slate-950/90 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
             <option value="ALL">Semua Negeri</option>
             <option value="KL">Kuala Lumpur (KL)</option>
@@ -398,10 +405,18 @@
       </div>
 
       <form id="addSchoolForm" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Kod Sekolah (Unik) <span class="text-ipgRed-400">*</span></label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Kod Sekolah <span class="text-ipgRed-400">*</span></label>
             <input type="text" id="newSchoolId" required placeholder="Cth: SK-KL-07" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500 uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Jenis Sekolah <span class="text-ipgRed-400">*</span></label>
+            <select id="newSchoolType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+              <option value="SK">SK</option>
+              <option value="SJKC">SJKC</option>
+              <option value="SJKT">SJKT</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Negeri <span class="text-ipgRed-400">*</span></label>
@@ -495,10 +510,18 @@
       <form id="editSchoolForm" class="space-y-4">
         <input type="hidden" id="editSchoolId">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1">Kod Sekolah</label>
             <input type="text" id="editSchoolIdDisplay" disabled class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-400 font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Jenis Sekolah <span class="text-ipgRed-400">*</span></label>
+            <select id="editSchoolType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+              <option value="SK">SK</option>
+              <option value="SJKC">SJKC</option>
+              <option value="SJKT">SJKT</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Negeri <span class="text-ipgRed-400">*</span></label>
@@ -604,19 +627,41 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Helper to infer or normalize school type ('SK', 'SJKC', 'SJKT')
+    function getSchoolType(school) {
+      if (!school) return 'SK';
+      if (school.schoolType) return String(school.schoolType).toUpperCase().replace(/[^A-Z]/g, '');
+      const upperName = String(school.name || '').toUpperCase();
+      if (upperName.startsWith('SJK(C)') || upperName.startsWith('SJKC')) return 'SJKC';
+      if (upperName.startsWith('SJK(T)') || upperName.startsWith('SJKT')) return 'SJKT';
+      return 'SK';
+    }
+
     const SCHOOL_DEFAULTS = [
-      { id: 'SK-KL-01', name: 'SK Bangsar', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Pantai Baharu, 59200 Kuala Lumpur', phone: '03-2282 1420', email: 'wba0001@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1189, lng: 101.6732, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-KL-02', name: 'SK Taman Melawati', state: 'KL', district: 'PPD Keramat', address: 'Jalan Melawati 5, 53100 Kuala Lumpur', phone: '03-4107 1954', email: 'bba7215@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2104, lng: 101.7495, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SK-KL-03', name: 'SK Seri Setia', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kuchai Lama, 58200 Kuala Lumpur', phone: '03-7983 1621', email: 'wba0048@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0891, lng: 101.6894, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-KL-04', name: 'SK Sentul Utama', state: 'KL', district: 'PPD Sentul', address: 'Jalan Sentul, 51100 Kuala Lumpur', phone: '03-4041 3288', email: 'wba0062@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1874, lng: 101.6921, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-KL-05', name: 'SK Bandar Tun Razak 1', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sembilang, 56000 Kuala Lumpur', phone: '03-9171 3890', email: 'wba0054@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0934, lng: 101.7210, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-KL-06', name: 'SK Kepong Baru', state: 'KL', district: 'PPD Sentul', address: 'Jalan Api Api, 52100 Kuala Lumpur', phone: '03-6274 1345', email: 'wba0019@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2120, lng: 101.6412, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SK-SEL-01', name: 'SK Seksyen 7 Shah Alam', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan Tungsten 7/23, 40000 Shah Alam', phone: '03-5510 8912', email: 'bba8264@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0782, lng: 101.4912, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-SEL-02', name: 'SK Subang Jaya', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 14/1, 47500 Subang Jaya', phone: '03-5633 2411', email: 'bba8219@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0645, lng: 101.5891, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-SEL-03', name: 'SK Saujana Impian Kajang', state: 'Selangor', district: 'PPD Hulu Langat', address: 'KM 22 Jalan Cheras, 43000 Kajang', phone: '03-8737 4120', email: 'bba4045@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0084, lng: 101.7892, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SK-SEL-04', name: 'SK Gombak Setia', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan 9, Gombak Setia, 53100 Kuala Lumpur', phone: '03-6189 4521', email: 'bba7204@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2201, lng: 101.7192, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-SEL-05', name: 'SK Petaling Jaya', state: 'Selangor', district: 'PPD Petaling Utama', address: 'Jalan 1/9, 46000 Petaling Jaya', phone: '03-7782 9104', email: 'bba8202@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0921, lng: 101.6421, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-SEL-06', name: 'SK Bandar Baru Bangi', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan 2/1, 43650 Bandar Baru Bangi', phone: '03-8925 0418', email: 'bba4028@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9641, lng: 101.7753, subjectsNeeded: ['Pendidikan Islam'] }
+      { id: 'SK-KL-01', name: 'SK Bangsar', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Pantai Baharu, 59200 Kuala Lumpur', phone: '03-2282 1420', email: 'wba0001@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1189, lng: 101.6732, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-KL-02', name: 'SK Taman Melawati', schoolType: 'SK', state: 'KL', district: 'PPD Keramat', address: 'Jalan Melawati 5, 53100 Kuala Lumpur', phone: '03-4107 1954', email: 'bba7215@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2104, lng: 101.7495, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-KL-03', name: 'SK Seri Setia', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kuchai Lama, 58200 Kuala Lumpur', phone: '03-7983 1621', email: 'wba0048@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0891, lng: 101.6894, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-KL-04', name: 'SK Sentul Utama', schoolType: 'SK', state: 'KL', district: 'PPD Sentul', address: 'Jalan Sentul, 51100 Kuala Lumpur', phone: '03-4041 3288', email: 'wba0062@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1874, lng: 101.6921, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-KL-05', name: 'SK Bandar Tun Razak 1', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sembilang, 56000 Kuala Lumpur', phone: '03-9171 3890', email: 'wba0054@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0934, lng: 101.7210, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-KL-06', name: 'SK Kepong Baru', schoolType: 'SK', state: 'KL', district: 'PPD Sentul', address: 'Jalan Api Api, 52100 Kuala Lumpur', phone: '03-6274 1345', email: 'wba0019@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2120, lng: 101.6412, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKC-KL-01', name: 'SJK(C) Tsun Jin', schoolType: 'SJKC', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kampung Pandan, 55100 Kuala Lumpur', phone: '03-9285 7421', email: 'wbc0138@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1375, lng: 101.7254, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKC-KL-02', name: 'SJK(C) Chung Kwok', schoolType: 'SJKC', state: 'KL', district: 'PPD Sentul', address: 'Jalan Raja Laut, 50350 Kuala Lumpur', phone: '03-2692 4315', email: 'wbc0114@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1618, lng: 101.6958, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKC-KL-03', name: 'SJK(C) Nan Kai', schoolType: 'SJKC', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sultan, 50000 Kuala Lumpur', phone: '03-2078 1924', email: 'wbc0129@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1422, lng: 101.6975, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKT-KL-01', name: 'SJK(T) Vivekananda', schoolType: 'SJKT', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Rozario, Brickfields, 50470 Kuala Lumpur', phone: '03-2274 1852', email: 'wbd0175@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1312, lng: 101.6865, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKT-KL-02', name: 'SJK(T) Sentul', schoolType: 'SJKT', state: 'KL', district: 'PPD Sentul', address: 'Jalan Strachan, 51100 Kuala Lumpur', phone: '03-4042 3510', email: 'wbd0183@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1815, lng: 101.6902, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKT-KL-03', name: 'SJK(T) Kampung Pandan', schoolType: 'SJKT', state: 'KL', district: 'PPD Keramat', address: 'Jalan Thaver, Kampung Pandan, 55100 Kuala Lumpur', phone: '03-9284 7120', email: 'wbd0179@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1438, lng: 101.7321, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-SEL-01', name: 'SK Seksyen 7 Shah Alam', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan Tungsten 7/23, 40000 Shah Alam', phone: '03-5510 8912', email: 'bba8264@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0782, lng: 101.4912, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-SEL-02', name: 'SK Subang Jaya', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 14/1, 47500 Subang Jaya', phone: '03-5633 2411', email: 'bba8219@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0645, lng: 101.5891, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-SEL-03', name: 'SK Saujana Impian Kajang', schoolType: 'SK', state: 'Selangor', district: 'PPD Hulu Langat', address: 'KM 22 Jalan Cheras, 43000 Kajang', phone: '03-8737 4120', email: 'bba4045@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0084, lng: 101.7892, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-SEL-04', name: 'SK Gombak Setia', schoolType: 'SK', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan 9, Gombak Setia, 53100 Kuala Lumpur', phone: '03-6189 4521', email: 'bba7204@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2201, lng: 101.7192, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-SEL-05', name: 'SK Petaling Jaya', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Utama', address: 'Jalan 1/9, 46000 Petaling Jaya', phone: '03-7782 9104', email: 'bba8202@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0921, lng: 101.6421, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-SEL-06', name: 'SK Bandar Baru Bangi', schoolType: 'SK', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan 2/1, 43650 Bandar Baru Bangi', phone: '03-8925 0418', email: 'bba4028@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9641, lng: 101.7753, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKC-SEL-01', name: 'SJK(C) Lick Hung', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 19/6, 47500 Subang Jaya', phone: '03-5635 1333', email: 'bbc8411@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0764, lng: 101.5842, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKC-SEL-02', name: 'SJK(C) Yu Hua Kajang', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan Low Ti Kok, 43000 Kajang', phone: '03-8736 1014', email: 'bbc4048@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9921, lng: 101.7905, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKC-SEL-03', name: 'SJK(C) Desa Jaya', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Gombak', address: 'Taman Desa Jaya, Kepong, 52100 Selangor', phone: '03-6276 1408', email: 'bbc7401@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2185, lng: 101.6289, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKT-SEL-01', name: 'SJK(T) Ladang Midlands', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Seksyen 7, 40000 Shah Alam', phone: '03-5519 4210', email: 'bbd8458@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0725, lng: 101.4865, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKT-SEL-02', name: 'SJK(T) Kajang', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan Reko, 43000 Kajang', phone: '03-8736 2841', email: 'bbd4055@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9875, lng: 101.7882, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKT-SEL-03', name: 'SJK(T) Batu Caves', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan Batu Caves, 68100 Batu Caves', phone: '03-6189 6520', email: 'bbd7451@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2372, lng: 101.6838, subjectsNeeded: ['Pendidikan Islam'] }
     ];
 
     let adminState = {
@@ -745,12 +790,14 @@
           return {
             id: d.id,
             ...data,
+            schoolType: getSchoolType(data),
             phone: data.phone || fallback?.phone || '-',
             email: data.email || fallback?.email || '-'
           };
         });
         updateStats();
         renderAdminSchoolsTable();
+        renderPlacementsTable();
       });
 
       onSnapshot(placementsRef, (snapshot) => {
@@ -799,6 +846,16 @@
       }
     };
 
+    // Helper to resolve school metadata (type & address) for any placement record
+    function resolvePlacementSchoolMeta(p) {
+      const matchedSchool = adminState.schools.find(s => s.id === p.school?.id || s.name === p.school?.name);
+      const schoolType = p.school?.schoolType || p.schoolType || p.leader?.schoolType || (matchedSchool ? getSchoolType(matchedSchool) : getSchoolType(p.school));
+      const schoolAddress = p.school?.address || matchedSchool?.address || '-';
+      const schoolPhone = p.school?.phone || matchedSchool?.phone || '-';
+      const schoolEmail = p.school?.email || matchedSchool?.email || '-';
+      return { schoolType, schoolAddress, schoolPhone, schoolEmail };
+    }
+
     // ---------------------------------------------------------
     // RENDER PLACEMENTS TABLE
     // ---------------------------------------------------------
@@ -841,6 +898,7 @@
 
       tbody.innerHTML = filtered.map((p, index) => {
         const leaderSubject = p.leader?.subject || '-';
+        const { schoolType } = resolvePlacementSchoolMeta(p);
 
         const membersHtml = (p.members || []).map((m, idx) => `
           <div class="text-slate-300 mt-1.5 pl-2 border-l-2 border-slate-700">
@@ -881,7 +939,10 @@
               ${memberMetaHtml}
             </td>
             <td class="p-4">
-              <div class="font-bold text-white">${p.school?.name || '-'}</div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] font-extrabold text-ipgGold-400 bg-ipgGold-500/15 px-2 py-0.5 rounded border border-ipgGold-500/30">${schoolType}</span>
+                <span class="font-bold text-white">${p.school?.name || '-'}</span>
+              </div>
               <div class="text-[11px] text-slate-400 mt-0.5">${p.negeri} • ${p.school?.district || ''}</div>
               <div class="text-[11px] text-ipgGold-400 mt-0.5"><i class="fa-solid fa-car-side mr-1"></i>${p.school?.calculatedDistance || '0'} KM</div>
             </td>
@@ -920,7 +981,7 @@
     };
 
     // ---------------------------------------------------------
-    // CSV EXPORT (INDIVIDUAL ROW PER STUDENT WITH OWN MENTOR)
+    // CSV EXPORT (INCLUDES JENIS SEKOLAH & ALAMAT SEKOLAH NEXT TO NAME)
     // ---------------------------------------------------------
     window.exportCSV = function() {
       if (adminState.placements.length === 0) {
@@ -939,7 +1000,9 @@
         'Nama Mentor',
         'No. Telefon Pelatih',
         'Negeri',
+        'Jenis Sekolah',
         'Sekolah',
+        'Alamat Sekolah',
         'No. Telefon Sekolah',
         'E-mel Sekolah',
         'Tarikh & Masa'
@@ -955,6 +1018,7 @@
 
       adminState.placements.forEach((p) => {
         const leaderSubject = p.leader?.subject || '-';
+        const { schoolType, schoolAddress, schoolPhone, schoolEmail } = resolvePlacementSchoolMeta(p);
         const formattedTimestamp = p.timestamp
           ? new Date(p.timestamp).toLocaleString('ms-MY', {
               day: '2-digit',
@@ -998,9 +1062,11 @@
             escapeCell(person.mentor),
             escapeCell(person.phone),
             escapeCell(p.negeri || '-'),
+            escapeCell(schoolType),
             escapeCell(p.school?.name || '-'),
-            escapeCell(p.school?.phone || '-'),
-            escapeCell(p.school?.email || '-'),
+            escapeCell(schoolAddress),
+            escapeCell(schoolPhone),
+            escapeCell(schoolEmail),
             escapeCell(formattedTimestamp)
           ].join(','));
         });
@@ -1026,6 +1092,7 @@
     // ---------------------------------------------------------
     window.clearSchoolSearch = function() {
       document.getElementById('adminSchoolSearchInput').value = '';
+      document.getElementById('adminSchoolTypeFilter').value = 'ALL';
       document.getElementById('adminSchoolNegeriFilter').value = 'ALL';
       document.getElementById('adminSchoolSubjectFilter').value = 'ALL';
       document.getElementById('adminSchoolStatusFilter').value = 'ALL';
@@ -1035,6 +1102,7 @@
     window.renderAdminSchoolsTable = function() {
       const tbody = document.getElementById('adminSchoolsTableBody');
       const search = document.getElementById('adminSchoolSearchInput').value.toLowerCase().trim();
+      const typeFilter = document.getElementById('adminSchoolTypeFilter').value;
       const negeriFilter = document.getElementById('adminSchoolNegeriFilter').value;
       const subjectFilter = document.getElementById('adminSchoolSubjectFilter').value;
       const statusFilter = document.getElementById('adminSchoolStatusFilter').value;
@@ -1050,6 +1118,10 @@
           (s.phone || '').toLowerCase().includes(search) ||
           (s.email || '').toLowerCase().includes(search)
         );
+      }
+
+      if (typeFilter !== 'ALL') {
+        filtered = filtered.filter(s => getSchoolType(s) === typeFilter);
       }
 
       if (negeriFilter !== 'ALL') {
@@ -1082,12 +1154,14 @@
         const slotsLeft = Math.max(0, (s.maxGroups || 1) - (s.bookedGroups || 0));
         const isFull = slotsLeft <= 0;
         const subjectText = (s.subjectsNeeded && s.subjectsNeeded.length > 0) ? s.subjectsNeeded.join(', ') : '-';
+        const sType = getSchoolType(s);
 
         return `
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="p-4">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${s.id}</span>
+                <span class="text-[10px] font-extrabold text-ipgGold-400 bg-ipgGold-500/15 px-2 py-0.5 rounded border border-ipgGold-500/30">${sType}</span>
                 <span class="font-bold text-white text-sm">${s.name}</span>
               </div>
               <div class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i>${s.address}</div>
@@ -1145,6 +1219,7 @@
     document.getElementById('addSchoolForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('newSchoolId').value.trim().toUpperCase();
+      const schoolType = document.getElementById('newSchoolType').value;
       const name = document.getElementById('newSchoolName').value.trim();
       const state = document.getElementById('newSchoolState').value;
       const phone = document.getElementById('newSchoolPhone').value.trim();
@@ -1159,6 +1234,7 @@
       try {
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'schools', id), {
           id,
+          schoolType,
           name,
           state,
           phone,
@@ -1172,7 +1248,7 @@
           subjectsNeeded: [subject]
         });
         closeAddSchoolModal();
-        showToast(`Sekolah ${name} (${id}) berjaya ditambah!`, 'success');
+        showToast(`Sekolah ${name} (${id} - ${schoolType}) berjaya ditambah!`, 'success');
       } catch (err) {
         console.error("Add School Error:", err);
         showToast('Gagal menambah sekolah baharu.', 'error');
@@ -1188,6 +1264,7 @@
 
       document.getElementById('editSchoolId').value = school.id;
       document.getElementById('editSchoolIdDisplay').value = school.id;
+      document.getElementById('editSchoolType').value = getSchoolType(school);
       document.getElementById('editSchoolState').value = school.state || 'KL';
       document.getElementById('editSchoolName').value = school.name || '';
       document.getElementById('editSchoolPhone').value = school.phone && school.phone !== '-' ? school.phone : '';
@@ -1210,6 +1287,7 @@
     document.getElementById('editSchoolForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('editSchoolId').value;
+      const schoolType = document.getElementById('editSchoolType').value;
       const state = document.getElementById('editSchoolState').value;
       const name = document.getElementById('editSchoolName').value.trim();
       const phone = document.getElementById('editSchoolPhone').value.trim();
@@ -1224,6 +1302,7 @@
 
       try {
         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'schools', id), {
+          schoolType,
           state,
           name,
           phone,
@@ -1237,7 +1316,7 @@
           subjectsNeeded: [subject]
         });
         closeEditSchoolModal();
-        showToast(`Perubahan bagi ${name} telah disimpan!`, 'success');
+        showToast(`Perubahan bagi ${name} (${schoolType}) telah disimpan!`, 'success');
       } catch (err) {
         console.error("Edit School Error:", err);
         showToast('Gagal mengemaskini maklumat sekolah.', 'error');
