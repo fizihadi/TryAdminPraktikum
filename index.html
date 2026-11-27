@@ -373,7 +373,7 @@
                 <th class="p-4">Kod, Nama & Perhubungan Sekolah</th>
                 <th class="p-4">Negeri & PPD</th>
                 <th class="p-4">Opsyen Ditetapkan</th>
-                <th class="p-4 text-center">Status Kuota</th>
+                <th class="p-4 text-center">Kapasiti & Status</th>
                 <th class="p-4 text-center">Tindakan</th>
               </tr>
             </thead>
@@ -465,8 +465,12 @@
 
         <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Kuota Kumpulan</label>
-            <input type="number" id="newSchoolMaxGroups" value="1" min="1" max="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Bilangan Ahli Maksimum</label>
+            <select id="newSchoolMaxTrainees" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgGold-500">
+              <option value="2">2 Orang</option>
+              <option value="3" selected>3 Orang</option>
+              <option value="4">4 Orang</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Latitud (GPS)</label>
@@ -570,8 +574,12 @@
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Kuota Maks</label>
-            <input type="number" id="editSchoolMaxGroups" min="1" max="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Bilangan Guru Pelatih</label>
+            <select id="editSchoolMaxTrainees" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-ipgBlue-500">
+              <option value="2">2 Orang</option>
+              <option value="3">3 Orang</option>
+              <option value="4">4 Orang</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Slot Diisi</label>
@@ -637,31 +645,43 @@
       return 'SK';
     }
 
+    // Helper to resolve allowed number of guru pelatih per school (2, 3, or 4)
+    function getAllowedTrainees(school) {
+      if (!school) return 3;
+      if (typeof school.maxTrainees === 'number' && school.maxTrainees >= 2) {
+        return school.maxTrainees;
+      }
+      if (typeof school.maxGroups === 'number' && school.maxGroups >= 2 && school.maxGroups <= 4) {
+        return school.maxGroups;
+      }
+      return school.state === 'KL' ? 2 : 4;
+    }
+
     const SCHOOL_DEFAULTS = [
-      { id: 'SK-KL-01', name: 'SK Bangsar', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Pantai Baharu, 59200 Kuala Lumpur', phone: '03-2282 1420', email: 'wba0001@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1189, lng: 101.6732, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-KL-02', name: 'SK Taman Melawati', schoolType: 'SK', state: 'KL', district: 'PPD Keramat', address: 'Jalan Melawati 5, 53100 Kuala Lumpur', phone: '03-4107 1954', email: 'bba7215@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2104, lng: 101.7495, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SK-KL-03', name: 'SK Seri Setia', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kuchai Lama, 58200 Kuala Lumpur', phone: '03-7983 1621', email: 'wba0048@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0891, lng: 101.6894, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-KL-04', name: 'SK Sentul Utama', schoolType: 'SK', state: 'KL', district: 'PPD Sentul', address: 'Jalan Sentul, 51100 Kuala Lumpur', phone: '03-4041 3288', email: 'wba0062@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1874, lng: 101.6921, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-KL-05', name: 'SK Bandar Tun Razak 1', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sembilang, 56000 Kuala Lumpur', phone: '03-9171 3890', email: 'wba0054@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0934, lng: 101.7210, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-KL-06', name: 'SK Kepong Baru', schoolType: 'SK', state: 'KL', district: 'PPD Sentul', address: 'Jalan Api Api, 52100 Kuala Lumpur', phone: '03-6274 1345', email: 'wba0019@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2120, lng: 101.6412, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SJKC-KL-01', name: 'SJK(C) Tsun Jin', schoolType: 'SJKC', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kampung Pandan, 55100 Kuala Lumpur', phone: '03-9285 7421', email: 'wbc0138@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1375, lng: 101.7254, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SJKC-KL-02', name: 'SJK(C) Chung Kwok', schoolType: 'SJKC', state: 'KL', district: 'PPD Sentul', address: 'Jalan Raja Laut, 50350 Kuala Lumpur', phone: '03-2692 4315', email: 'wbc0114@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1618, lng: 101.6958, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SJKC-KL-03', name: 'SJK(C) Nan Kai', schoolType: 'SJKC', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sultan, 50000 Kuala Lumpur', phone: '03-2078 1924', email: 'wbc0129@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1422, lng: 101.6975, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SJKT-KL-01', name: 'SJK(T) Vivekananda', schoolType: 'SJKT', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Rozario, Brickfields, 50470 Kuala Lumpur', phone: '03-2274 1852', email: 'wbd0175@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1312, lng: 101.6865, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SJKT-KL-02', name: 'SJK(T) Sentul', schoolType: 'SJKT', state: 'KL', district: 'PPD Sentul', address: 'Jalan Strachan, 51100 Kuala Lumpur', phone: '03-4042 3510', email: 'wbd0183@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1815, lng: 101.6902, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SJKT-KL-03', name: 'SJK(T) Kampung Pandan', schoolType: 'SJKT', state: 'KL', district: 'PPD Keramat', address: 'Jalan Thaver, Kampung Pandan, 55100 Kuala Lumpur', phone: '03-9284 7120', email: 'wbd0179@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.1438, lng: 101.7321, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SK-SEL-01', name: 'SK Seksyen 7 Shah Alam', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan Tungsten 7/23, 40000 Shah Alam', phone: '03-5510 8912', email: 'bba8264@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0782, lng: 101.4912, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-SEL-02', name: 'SK Subang Jaya', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 14/1, 47500 Subang Jaya', phone: '03-5633 2411', email: 'bba8219@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0645, lng: 101.5891, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-SEL-03', name: 'SK Saujana Impian Kajang', schoolType: 'SK', state: 'Selangor', district: 'PPD Hulu Langat', address: 'KM 22 Jalan Cheras, 43000 Kajang', phone: '03-8737 4120', email: 'bba4045@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0084, lng: 101.7892, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SK-SEL-04', name: 'SK Gombak Setia', schoolType: 'SK', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan 9, Gombak Setia, 53100 Kuala Lumpur', phone: '03-6189 4521', email: 'bba7204@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2201, lng: 101.7192, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SK-SEL-05', name: 'SK Petaling Jaya', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Utama', address: 'Jalan 1/9, 46000 Petaling Jaya', phone: '03-7782 9104', email: 'bba8202@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0921, lng: 101.6421, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SK-SEL-06', name: 'SK Bandar Baru Bangi', schoolType: 'SK', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan 2/1, 43650 Bandar Baru Bangi', phone: '03-8925 0418', email: 'bba4028@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9641, lng: 101.7753, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SJKC-SEL-01', name: 'SJK(C) Lick Hung', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 19/6, 47500 Subang Jaya', phone: '03-5635 1333', email: 'bbc8411@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0764, lng: 101.5842, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SJKC-SEL-02', name: 'SJK(C) Yu Hua Kajang', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan Low Ti Kok, 43000 Kajang', phone: '03-8736 1014', email: 'bbc4048@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9921, lng: 101.7905, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SJKC-SEL-03', name: 'SJK(C) Desa Jaya', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Gombak', address: 'Taman Desa Jaya, Kepong, 52100 Selangor', phone: '03-6276 1408', email: 'bbc7401@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2185, lng: 101.6289, subjectsNeeded: ['Pendidikan Islam'] },
-      { id: 'SJKT-SEL-01', name: 'SJK(T) Ladang Midlands', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Seksyen 7, 40000 Shah Alam', phone: '03-5519 4210', email: 'bbd8458@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.0725, lng: 101.4865, subjectsNeeded: ['Bahasa Melayu'] },
-      { id: 'SJKT-SEL-02', name: 'SJK(T) Kajang', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan Reko, 43000 Kajang', phone: '03-8736 2841', email: 'bbd4055@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 2.9875, lng: 101.7882, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
-      { id: 'SJKT-SEL-03', name: 'SJK(T) Batu Caves', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan Batu Caves, 68100 Batu Caves', phone: '03-6189 6520', email: 'bbd7451@moe.edu.my', maxGroups: 1, bookedGroups: 0, lat: 3.2372, lng: 101.6838, subjectsNeeded: ['Pendidikan Islam'] }
+      { id: 'SK-KL-01', name: 'SK Bangsar', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Pantai Baharu, 59200 Kuala Lumpur', phone: '03-2282 1420', email: 'wba0001@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.1189, lng: 101.6732, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-KL-02', name: 'SK Taman Melawati', schoolType: 'SK', state: 'KL', district: 'PPD Keramat', address: 'Jalan Melawati 5, 53100 Kuala Lumpur', phone: '03-4107 1954', email: 'bba7215@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.2104, lng: 101.7495, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-KL-03', name: 'SK Seri Setia', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kuchai Lama, 58200 Kuala Lumpur', phone: '03-7983 1621', email: 'wba0048@moe.edu.my', maxGroups: 1, maxTrainees: 4, bookedGroups: 0, lat: 3.0891, lng: 101.6894, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-KL-04', name: 'SK Sentul Utama', schoolType: 'SK', state: 'KL', district: 'PPD Sentul', address: 'Jalan Sentul, 51100 Kuala Lumpur', phone: '03-4041 3288', email: 'wba0062@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.1874, lng: 101.6921, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-KL-05', name: 'SK Bandar Tun Razak 1', schoolType: 'SK', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sembilang, 56000 Kuala Lumpur', phone: '03-9171 3890', email: 'wba0054@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.0934, lng: 101.7210, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-KL-06', name: 'SK Kepong Baru', schoolType: 'SK', state: 'KL', district: 'PPD Sentul', address: 'Jalan Api Api, 52100 Kuala Lumpur', phone: '03-6274 1345', email: 'wba0019@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.2120, lng: 101.6412, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKC-KL-01', name: 'SJK(C) Tsun Jin', schoolType: 'SJKC', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Kampung Pandan, 55100 Kuala Lumpur', phone: '03-9285 7421', email: 'wbc0138@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.1375, lng: 101.7254, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKC-KL-02', name: 'SJK(C) Chung Kwok', schoolType: 'SJKC', state: 'KL', district: 'PPD Sentul', address: 'Jalan Raja Laut, 50350 Kuala Lumpur', phone: '03-2692 4315', email: 'wbc0114@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.1618, lng: 101.6958, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKC-KL-03', name: 'SJK(C) Nan Kai', schoolType: 'SJKC', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Sultan, 50000 Kuala Lumpur', phone: '03-2078 1924', email: 'wbc0129@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.1422, lng: 101.6975, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKT-KL-01', name: 'SJK(T) Vivekananda', schoolType: 'SJKT', state: 'KL', district: 'PPD Bangsar / Pudu', address: 'Jalan Rozario, Brickfields, 50470 Kuala Lumpur', phone: '03-2274 1852', email: 'wbd0175@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.1312, lng: 101.6865, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKT-KL-02', name: 'SJK(T) Sentul', schoolType: 'SJKT', state: 'KL', district: 'PPD Sentul', address: 'Jalan Strachan, 51100 Kuala Lumpur', phone: '03-4042 3510', email: 'wbd0183@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.1815, lng: 101.6902, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKT-KL-03', name: 'SJK(T) Kampung Pandan', schoolType: 'SJKT', state: 'KL', district: 'PPD Keramat', address: 'Jalan Thaver, Kampung Pandan, 55100 Kuala Lumpur', phone: '03-9284 7120', email: 'wbd0179@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.1438, lng: 101.7321, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-SEL-01', name: 'SK Seksyen 7 Shah Alam', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan Tungsten 7/23, 40000 Shah Alam', phone: '03-5510 8912', email: 'bba8264@moe.edu.my', maxGroups: 1, maxTrainees: 4, bookedGroups: 0, lat: 3.0782, lng: 101.4912, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-SEL-02', name: 'SK Subang Jaya', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 14/1, 47500 Subang Jaya', phone: '03-5633 2411', email: 'bba8219@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.0645, lng: 101.5891, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-SEL-03', name: 'SK Saujana Impian Kajang', schoolType: 'SK', state: 'Selangor', district: 'PPD Hulu Langat', address: 'KM 22 Jalan Cheras, 43000 Kajang', phone: '03-8737 4120', email: 'bba4045@moe.edu.my', maxGroups: 1, maxTrainees: 4, bookedGroups: 0, lat: 3.0084, lng: 101.7892, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SK-SEL-04', name: 'SK Gombak Setia', schoolType: 'SK', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan 9, Gombak Setia, 53100 Kuala Lumpur', phone: '03-6189 4521', email: 'bba7204@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.2201, lng: 101.7192, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SK-SEL-05', name: 'SK Petaling Jaya', schoolType: 'SK', state: 'Selangor', district: 'PPD Petaling Utama', address: 'Jalan 1/9, 46000 Petaling Jaya', phone: '03-7782 9104', email: 'bba8202@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.0921, lng: 101.6421, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SK-SEL-06', name: 'SK Bandar Baru Bangi', schoolType: 'SK', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan 2/1, 43650 Bandar Baru Bangi', phone: '03-8925 0418', email: 'bba4028@moe.edu.my', maxGroups: 1, maxTrainees: 4, bookedGroups: 0, lat: 2.9641, lng: 101.7753, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKC-SEL-01', name: 'SJK(C) Lick Hung', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Jalan SS 19/6, 47500 Subang Jaya', phone: '03-5635 1333', email: 'bbc8411@moe.edu.my', maxGroups: 1, maxTrainees: 4, bookedGroups: 0, lat: 3.0764, lng: 101.5842, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKC-SEL-02', name: 'SJK(C) Yu Hua Kajang', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan Low Ti Kok, 43000 Kajang', phone: '03-8736 1014', email: 'bbc4048@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 2.9921, lng: 101.7905, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKC-SEL-03', name: 'SJK(C) Desa Jaya', schoolType: 'SJKC', state: 'Selangor', district: 'PPD Gombak', address: 'Taman Desa Jaya, Kepong, 52100 Selangor', phone: '03-6276 1408', email: 'bbc7401@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.2185, lng: 101.6289, subjectsNeeded: ['Pendidikan Islam'] },
+      { id: 'SJKT-SEL-01', name: 'SJK(T) Ladang Midlands', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Petaling Perdana', address: 'Seksyen 7, 40000 Shah Alam', phone: '03-5519 4210', email: 'bbd8458@moe.edu.my', maxGroups: 1, maxTrainees: 3, bookedGroups: 0, lat: 3.0725, lng: 101.4865, subjectsNeeded: ['Bahasa Melayu'] },
+      { id: 'SJKT-SEL-02', name: 'SJK(T) Kajang', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Hulu Langat', address: 'Jalan Reko, 43000 Kajang', phone: '03-8736 2841', email: 'bbd4055@moe.edu.my', maxGroups: 1, maxTrainees: 4, bookedGroups: 0, lat: 2.9875, lng: 101.7882, subjectsNeeded: ['Bahasa Inggeris (TESL)'] },
+      { id: 'SJKT-SEL-03', name: 'SJK(T) Batu Caves', schoolType: 'SJKT', state: 'Selangor', district: 'PPD Gombak', address: 'Jalan Batu Caves, 68100 Batu Caves', phone: '03-6189 6520', email: 'bbd7451@moe.edu.my', maxGroups: 1, maxTrainees: 2, bookedGroups: 0, lat: 3.2372, lng: 101.6838, subjectsNeeded: ['Pendidikan Islam'] }
     ];
 
     let adminState = {
@@ -791,6 +811,7 @@
             id: d.id,
             ...data,
             schoolType: getSchoolType(data),
+            maxTrainees: getAllowedTrainees(data),
             phone: data.phone || fallback?.phone || '-',
             email: data.email || fallback?.email || '-'
           };
@@ -812,8 +833,8 @@
     function updateStats() {
       const totalGroups = adminState.placements.length;
       const totalTrainees = adminState.placements.reduce((sum, p) => sum + 1 + (p.members ? p.members.length : 0), 0);
-      const availSchools = adminState.schools.filter(s => (s.maxGroups - s.bookedGroups) > 0).length;
-      const fullSchools = adminState.schools.filter(s => (s.maxGroups - s.bookedGroups) <= 0).length;
+      const availSchools = adminState.schools.filter(s => ((s.maxGroups || 1) - (s.bookedGroups || 0)) > 0).length;
+      const fullSchools = adminState.schools.filter(s => ((s.maxGroups || 1) - (s.bookedGroups || 0)) <= 0).length;
 
       document.getElementById('statTotalGroups').innerText = totalGroups;
       document.getElementById('statTotalTrainees').innerText = totalTrainees;
@@ -1133,9 +1154,9 @@
       }
 
       if (statusFilter === 'AVAILABLE') {
-        filtered = filtered.filter(s => (s.maxGroups - s.bookedGroups) > 0);
+        filtered = filtered.filter(s => ((s.maxGroups || 1) - (s.bookedGroups || 0)) > 0);
       } else if (statusFilter === 'FULL') {
-        filtered = filtered.filter(s => (s.maxGroups - s.bookedGroups) <= 0);
+        filtered = filtered.filter(s => ((s.maxGroups || 1) - (s.bookedGroups || 0)) <= 0);
       }
 
       if (filtered.length === 0) {
@@ -1155,6 +1176,7 @@
         const isFull = slotsLeft <= 0;
         const subjectText = (s.subjectsNeeded && s.subjectsNeeded.length > 0) ? s.subjectsNeeded.join(', ') : '-';
         const sType = getSchoolType(s);
+        const allowedTrainees = getAllowedTrainees(s);
 
         return `
           <tr class="hover:bg-slate-800/40 transition-colors">
@@ -1179,15 +1201,22 @@
                 ${subjectText}
               </span>
             </td>
-            <td class="p-4 text-center">
-              ${isFull ?
-                `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-ipgRed-300 bg-ipgRed-900/80 px-2.5 py-1 rounded-full border border-ipgRed-600/50">
-                  <i class="fa-solid fa-lock"></i> PENUH (${s.bookedGroups}/${s.maxGroups})
-                 </span>` :
-                `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-ipgGreen-300 bg-ipgGreen-900/80 px-2.5 py-1 rounded-full border border-ipgGreen-600/50">
-                  <i class="fa-solid fa-check"></i> BAKI ${slotsLeft} KUOTA
-                 </span>`
-              }
+            <td class="p-4 text-center space-y-1.5">
+              <div>
+                <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-ipgBlue-300 bg-ipgBlue-500/15 px-2.5 py-1 rounded-full border border-ipgBlue-500/30">
+                  <i class="fa-solid fa-users"></i> ${allowedTrainees} GURU PELATIH
+                </span>
+              </div>
+              <div>
+                ${isFull ?
+                  `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-ipgRed-300 bg-ipgRed-900/80 px-2.5 py-0.5 rounded-full border border-ipgRed-600/50">
+                    <i class="fa-solid fa-lock"></i> PENUH (${s.bookedGroups}/${s.maxGroups || 1})
+                   </span>` :
+                  `<span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-ipgGreen-300 bg-ipgGreen-900/80 px-2.5 py-0.5 rounded-full border border-ipgGreen-600/50">
+                    <i class="fa-solid fa-check"></i> TERSEDIA
+                   </span>`
+                }
+              </div>
             </td>
             <td class="p-4 text-center">
               <div class="inline-flex items-center gap-1.5">
@@ -1209,6 +1238,7 @@
     // ---------------------------------------------------------
     window.openAddSchoolModal = function() {
       document.getElementById('addSchoolForm').reset();
+      document.getElementById('newSchoolMaxTrainees').value = '3';
       document.getElementById('addSchoolModal').classList.remove('hidden');
     };
 
@@ -1227,7 +1257,7 @@
       const district = document.getElementById('newSchoolDistrict').value.trim();
       const subject = document.getElementById('newSchoolSubject').value;
       const address = document.getElementById('newSchoolAddress').value.trim();
-      const maxGroups = parseInt(document.getElementById('newSchoolMaxGroups').value, 10) || 1;
+      const maxTrainees = parseInt(document.getElementById('newSchoolMaxTrainees').value, 10) || 3;
       const lat = parseFloat(document.getElementById('newSchoolLat').value) || 3.1390;
       const lng = parseFloat(document.getElementById('newSchoolLng').value) || 101.6869;
 
@@ -1241,7 +1271,8 @@
           email,
           district,
           address,
-          maxGroups,
+          maxGroups: 1,
+          maxTrainees,
           bookedGroups: 0,
           lat,
           lng,
@@ -1272,7 +1303,7 @@
       document.getElementById('editSchoolDistrict').value = school.district || '';
       document.getElementById('editSchoolSubject').value = (school.subjectsNeeded && school.subjectsNeeded[0]) ? school.subjectsNeeded[0] : 'Bahasa Melayu';
       document.getElementById('editSchoolAddress').value = school.address || '';
-      document.getElementById('editSchoolMaxGroups').value = school.maxGroups ?? 1;
+      document.getElementById('editSchoolMaxTrainees').value = String(getAllowedTrainees(school));
       document.getElementById('editSchoolBookedGroups').value = school.bookedGroups ?? 0;
       document.getElementById('editSchoolLat').value = school.lat ?? 3.1390;
       document.getElementById('editSchoolLng').value = school.lng ?? 101.6869;
@@ -1295,7 +1326,7 @@
       const district = document.getElementById('editSchoolDistrict').value.trim();
       const subject = document.getElementById('editSchoolSubject').value;
       const address = document.getElementById('editSchoolAddress').value.trim();
-      const maxGroups = parseInt(document.getElementById('editSchoolMaxGroups').value, 10) || 1;
+      const maxTrainees = parseInt(document.getElementById('editSchoolMaxTrainees').value, 10) || 3;
       const bookedGroups = parseInt(document.getElementById('editSchoolBookedGroups').value, 10) || 0;
       const lat = parseFloat(document.getElementById('editSchoolLat').value) || 3.1390;
       const lng = parseFloat(document.getElementById('editSchoolLng').value) || 101.6869;
@@ -1309,7 +1340,8 @@
           email,
           district,
           address,
-          maxGroups,
+          maxGroups: 1,
+          maxTrainees,
           bookedGroups,
           lat,
           lng,
